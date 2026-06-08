@@ -1,0 +1,20 @@
+# Pretrain 阶段配置
+extends: default
+
+stage: pretrain
+n_epochs: 1
+batch_size: 76
+gradient_accumulation_steps: 3
+eval_batch_interval: 100
+
+model:
+  max_position_embeddings: 512
+  rope:
+    rope_type: default
+
+lr:
+  max: 6.0e-4
+  initial: 1.0e-7
+  scheduler: true
+
+data_size: 6532000

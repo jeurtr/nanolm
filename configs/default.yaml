@@ -1,0 +1,56 @@
+# NanoLM 默认配置 — 所有阶段共享的基线参数
+
+# === 模型架构 ===
+model:
+  hidden_size: 768
+  intermediate_size: 2048
+  num_hidden_layers: 12
+  num_attention_heads: 12
+  num_key_value_heads: 4
+  attention_dropout: 0.0
+  attention_implementation: auto
+  tie_word_embeddings: true
+  use_qk_norm: true
+  initializer_range: 0.02
+  rope:
+    rope_theta: 10000.0
+    rope_type: default       # default | dynamic | yarn
+    factor: 1.0
+
+# === 优化器 ===
+optimizer:
+  type: adam                 # adam | lion
+  weight_decay: 0.01
+  betas: [0.9, 0.999]
+  min_lr_ratio: 0.1          # min_lr = max_lr * min_lr_ratio
+  warmup_ratio: 0.1          # warmup_iters = 0.1 * total_steps
+
+# === DeepSpeed ===
+ds:
+  zero_stage: 1              # 0 | 1 | 2 | 3
+  gradient_clipping: 1.0
+  bf16: true
+
+# === DataLoader ===
+dataloader:
+  pin_memory: true
+  num_workers: 0
+  shuffle: false
+  drop_last: true
+
+# === Loss ===
+loss:
+  aux_loss_coef: 0.001
+  critical_tokens: null
+  critical_alpha: 1.0
+
+# === Eval ===
+eval:
+  temperature: 1.0
+  top_p: 0.95
+  top_k: null
+
+# === 路径 ===
+paths:
+  init_checkpoint: ./last_checkpoint.bin
+  ref_checkpoint: ./sft.bin           # PPO 参考模型
