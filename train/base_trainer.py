@@ -111,13 +111,13 @@ class BaseTrainer:
 
         return model, optim
 
-    def _check_freeze_model(self, model): ...
+    def _check_freeze_model(self, model): pass
 
     def _config_optim(self, model, initial_lr):
         optimizer_cls, use_lion_optim = self._get_optim_cls()
 
         betas = self.train_config.optim_config.betas
-        weight_decay = self.train_config.optim_config.betas
+        weight_decay = self.train_config.optim_config.weight_decay
 
         if betas is None:
             betas = (0.95, 0.98) if use_lion_optim else (0.9, 0.999)
