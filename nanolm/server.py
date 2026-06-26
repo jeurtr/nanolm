@@ -11,7 +11,7 @@ import sys
 import traceback
 
 import torch
-from bottle import Bottle, request, response, run
+from bottle import Bottle, request, response, run, static_file
 
 from model import LlmModel
 from nanolm.device import get_optimal_device
@@ -65,6 +65,10 @@ def main():
             f.write(f'{visitor_count + 1}')
 
         return html.replace('{{__VISITOR_COUNT__}}', f"{visitor_count}").replace('{{__GENERATE_COUNT__}}', f"{generate_count}")
+
+    @app.route('/static/<filename>')
+    def serve_static(filename):
+        return static_file(filename, root=static_dir)
 
     @app.hook('after_request')
     def enable_cors():
