@@ -1,0 +1,17 @@
+cff-version: 1.2.0
+message: "如果 NanoLM 对你的研究有帮助，请引用以下信息。"
+title: "NanoLM: An Accessible Small-Scale Language Model Training Framework"
+authors:
+  - family-names: "-"
+    given-names: "-"
+repository-code: "https://github.com/jeurtr/nanolm"
+license: Apache-2.0
+version: 0.1.1
+date-released: 2025-06-15
+keywords:
+  - language model
+  - pretraining
+  - rlhf
+  - deep learning
+  - natural language processing
+abstract: "一个面向个人开发者的微型语言模型全流程训练框架，在消费级 GPU 上实现从 Pretrain 到 RLHF 的完整训练。"
