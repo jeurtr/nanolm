@@ -55,7 +55,7 @@ def _eval_one_model(model_type, rm, rm_tokenizer, device):
 
     batch_eval_template = []
     for prompt in PROMPTS:
-        chat_template = get_eval_prompt(prompt)
+        chat_template = get_eval_prompt(prompt, tokenizer=TrainerTools().tokenizer)
         chat_tokens = TrainerTools().tokenizer.encode(chat_template, covert_tensor=True)
 
         generator = streaming_generate(

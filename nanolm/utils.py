@@ -17,27 +17,23 @@ def init_env():
     os.environ['SAVE_BEST_CHECKPOINT'] = '0'  # or '1'
 
 
-def get_eval_prompt(content: str) -> str:
-    from train import TrainerTools
-
+def get_eval_prompt(content: str, tokenizer) -> str:
     chat_template = [
         {'role': 'system', 'content': ' '},
         {'role': 'user', 'content': content}
     ]
 
-    chat_template = TrainerTools().tokenizer.apply_chat_template(chat_template, tokenizer=False)
+    chat_template = tokenizer.apply_chat_template(chat_template, tokenizer=False)
     return f'{chat_template}<assistant>'
 
 
-def get_model_config(long_context=False):
-    from train import TrainerTools
-
+def get_model_config(long_context=False, vocab_size=8192):
     max_position_embeddings = 2048 if long_context else 512
     original_max_position_embeddings = 512 if long_context else None
     rope_type = 'yarn' if long_context else 'default'
 
     return ModelConfig(
-        vocab_size=TrainerTools().tokenizer.vocab_size,
+        vocab_size=vocab_size,
         hidden_size=768,
         intermediate_size=2048,
 

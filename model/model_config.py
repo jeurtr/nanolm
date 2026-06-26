@@ -80,7 +80,7 @@ class MoEConfig:
 
 
 @dataclass(kw_only=True)
-class Config:
+class ModelConfig:
     """
     llm model config
 
@@ -141,7 +141,7 @@ class Config:
 
 
 @dataclass(kw_only=True)
-class VLMConfig(Config):
+class VLMConfig(ModelConfig):
     """
     vlm config
     """

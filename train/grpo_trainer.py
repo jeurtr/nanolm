@@ -20,11 +20,11 @@ from .loss import GRPOLoss
 from .partition_utils import sync_model_params, unwrap_model_for_generation
 from .tools import TrainerTools
 from .train_configs import TrainConfig
+from .collate import left_pad_sequence
 from .utils import (
     autocast,
     calc_position_ids,
     disable_dropout_in_model,
-    left_pad_sequence,
     log_softmax,
 )
 

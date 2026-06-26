@@ -12,8 +12,16 @@ parallel_types = {
 }
 
 class TrainerTools:
+    """Shared training state (tokenizer, parallel backend, amp flag).
+
+    Uses a singleton pattern so all trainers share the same initialized state.
+    Call ``TrainerTools.reset()`` to clear state between test runs.
+    """
+
+    _singleton: 'TrainerTools | None' = None
+
     def __init__(self):
-        if not hasattr(TrainerTools, "_first_init"):
+        if not hasattr(TrainerTools, '_first_init'):
             TrainerTools._first_init = True
 
             self.parallel = self._new_parallel()
@@ -29,10 +37,16 @@ class TrainerTools:
         return parallel_types[parallel_type]()
 
     def __new__(cls, *args, **kwargs):
-        if not hasattr(TrainerTools, "_instance"):
-            TrainerTools._instance = object.__new__(cls)
+        if TrainerTools._singleton is None:
+            TrainerTools._singleton = object.__new__(cls)
+        return TrainerTools._singleton
 
-        return TrainerTools._instance
+    @classmethod
+    def reset(cls):
+        """Reset singleton state. Useful for tests."""
+        cls._singleton = None
+        if hasattr(cls, '_first_init'):
+            del cls._first_init
 
 
 class FileDataset(ABC):

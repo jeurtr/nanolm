@@ -2,12 +2,13 @@ import math
 from typing import Optional
 
 import torch
+from torch import nn
 
-from .model_config import Config
+from .model_config import ModelConfig
 
 
 def _compute_default_rope_parameters(
-    config: Config,
+    config: ModelConfig,
     device: Optional["torch.device"] = None,
     seq_len: int | None = None,
 ) -> tuple["torch.Tensor", float]:
@@ -37,7 +38,7 @@ def _compute_default_rope_parameters(
 
 
 def _compute_dynamic_ntk_parameters(
-    config: Config,
+    config: ModelConfig,
     device: Optional["torch.device"] = None,
     seq_len: int | None = None,
 ) -> tuple["torch.Tensor", float]:
@@ -73,7 +74,7 @@ def _compute_dynamic_ntk_parameters(
 
 
 def _compute_yarn_parameters(
-    config: Config,
+    config: ModelConfig,
     device: Optional["torch.device"] = None,
     seq_len: int | None = None
 ) -> tuple["torch.Tensor", float]:
@@ -101,7 +102,7 @@ def _compute_yarn_parameters(
     mscale_all_dim = config.rope_config.mscale_all_dim
     original_max_position_embeddings = config.original_max_position_embeddings
 
-    # NOTE: DeekSeek-V3 (and potentially other models) modify `max_position_embeddings` and have a
+    # NOTE: DeepSeek-V3 (and potentially other models) modify `max_position_embeddings` and have a
     # `original_max_position_embeddings` field containing the pretrained value. They use the ratio between these two
     # values to compute the default attention scaling factor, instead of using `factor`.
     if original_max_position_embeddings:
@@ -202,3 +203,56 @@ def apply_rotary_pos_emb(q, k, cos, sin, unsqueeze_dim=1):
     q_embed = (q * cos) + (rotate_half(q) * sin)
     k_embed = (k * cos) + (rotate_half(k) * sin)
     return q_embed, k_embed
+
+
+class RotaryEmbedding(nn.Module):
+    def __init__(self, config: ModelConfig | None = None, device=None):
+        super().__init__()
+
+        if config is not None and config.rope_config.rope_type is not None:
+            self.rope_type = config.rope_config.rope_type
+        else:
+            self.rope_type = 'default'
+
+        self.max_seq_len_cached = config.max_position_embeddings
+        self.original_max_seq_len = config.max_position_embeddings
+
+        self.config = config
+        self.rope_init_fn = ROPE_INIT_FUNCTIONS[self.rope_type]
+
+        inv_freq, self.attention_scaling = self.rope_init_fn(self.config, device)
+        self.register_buffer('inv_freq', inv_freq, persistent=False)
+        self.original_inv_freq = self.inv_freq
+
+    def _dynamic_frequency_update(self, position_ids, device):
+        seq_len = torch.max(position_ids) + 1
+        if seq_len > self.max_seq_len_cached:
+            inv_freq, self.attention_scaling = self.rope_init_fn(
+                self.config, device, seq_len=seq_len
+            )
+            self.register_buffer('inv_freq', inv_freq, persistent=False)
+            self.max_seq_len_cached = seq_len
+
+        if seq_len < self.original_max_seq_len and self.max_seq_len_cached > self.original_max_seq_len:
+            self.register_buffer('inv_freq', self.original_inv_freq, persistent=False)
+            self.max_seq_len_cached = self.original_max_seq_len
+
+    @torch.no_grad()
+    def forward(self, x, position_ids):
+        if self.rope_type == 'dynamic':
+            self._dynamic_frequency_update(position_ids, device=x.device)
+
+        inv_freq_expanded = self.inv_freq[None, :, None].float().expand(position_ids.shape[0], -1, 1)
+        position_ids_expanded = position_ids[:, None, :].float()
+        dt = x.device.type if isinstance(x.device, torch.device) else str(x.device)
+        device_type = dt if dt != 'mps' else 'cpu'
+        with torch.autocast(device_type=device_type, enabled=False):
+            freqs = (inv_freq_expanded.float() @ position_ids_expanded.float()).transpose(1, 2)
+            emb = torch.cat((freqs, freqs), dim=-1)
+            cos = emb.cos()
+            sin = emb.sin()
+
+        cos = cos * self.attention_scaling
+        sin = sin * self.attention_scaling
+
+        return cos.to(dtype=x.dtype), sin.to(dtype=x.dtype)

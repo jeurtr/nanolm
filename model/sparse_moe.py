@@ -6,11 +6,11 @@ import torch.nn.functional as F
 import torch.nn.init as init
 from torch import nn
 
-from .model_config import Config
+from .model_config import ModelConfig
 
 
 class MoEGate(nn.Module):
-    def __init__(self, config: Config):
+    def __init__(self, config: ModelConfig):
         super().__init__()
         self.config = config
         self.top_k = config.moe_config.num_experts_per_tok
@@ -91,7 +91,7 @@ class MoE(nn.Module):
     A mixed expert module containing shared experts.
     """
 
-    def __init__(self, config: Config, layer: Callable):
+    def __init__(self, config: ModelConfig, layer: Callable):
         super().__init__()
         self.config = config
         self.num_experts_per_tok = config.moe_config.num_experts_per_tok

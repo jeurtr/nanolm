@@ -16,7 +16,8 @@ from .log import Logger
 from .loss import DPOLoss
 from .tools import TrainerTools
 from .train_configs import TrainConfig
-from .utils import autocast, disable_dropout_in_model, get_dpo_collate_fn, log_softmax
+from .collate import get_dpo_collate_fn
+from .utils import autocast, disable_dropout_in_model, log_softmax
 
 
 class DPOTrainer(BaseTrainer):

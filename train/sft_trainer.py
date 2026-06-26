@@ -7,7 +7,7 @@ from .base_trainer import BaseTrainer
 from .dataset import SFTDataset
 from .tools import TrainerTools
 from .train_configs import TrainConfig
-from .utils import get_sft_collate_fn
+from .collate import get_sft_collate_fn
 
 
 class SFTTrainer(BaseTrainer):

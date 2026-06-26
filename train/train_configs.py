@@ -26,7 +26,7 @@ class DsActivationCheckpointingConfig:
 
 
 @dataclass(kw_only=True)
-class DsZeROConfig:
+class DsZeroConfig:
     stage: int
     allgather_partitions: bool | None = True
     allgather_bucket_size: int | None = 5e8
@@ -36,24 +36,24 @@ class DsZeROConfig:
     contiguous_gradients: bool | None = True
 
 @dataclass(kw_only=True)
-class DsZero0Config(DsZeROConfig):
+class DsZero0Config(DsZeroConfig):
     stage: int = field(default=0, init=False)
 
 
 @dataclass(kw_only=True)
-class DsZero1Config(DsZeROConfig):
+class DsZero1Config(DsZeroConfig):
     stage: int = field(default=1, init=False)
 
 
 @dataclass(kw_only=True)
-class DsZero2Config(DsZeROConfig):
+class DsZero2Config(DsZeroConfig):
     stage: int = field(default=2, init=False)
     offload_optimizer: DsOffloadConfig | None = None
     offload_param: DsOffloadConfig | None = None
 
 
 @dataclass(kw_only=True)
-class DsZero3Config(DsZeROConfig):
+class DsZero3Config(DsZeroConfig):
     stage: int = field(default=3, init=False)
     sub_group_size: int | None = 1e9
     stage3_prefetch_bucket_size: str | int | None = 'auto'
@@ -83,7 +83,7 @@ class DsBf16Config:
 
 @dataclass(kw_only=True)
 class DsConfig:
-    zero_config: DsZeROConfig | None = field(default_factory=DsZero3Config)
+    zero_config: DsZeroConfig | None = field(default_factory=DsZero3Config)
     fp16_config: DsFp16Config | None = field(default_factory=DsFp16Config)
     bf16_config: DsBf16Config | None = field(default_factory=DsBf16Config)
     gradient_clipping: float | None = 1.0

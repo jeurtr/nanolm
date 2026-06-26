@@ -4,7 +4,7 @@ from torch.utils.data import Dataset
 from .base_trainer import BaseTrainer
 from .dataset import PretrainDataset
 from .train_configs import TrainConfig
-from .utils import pretrain_collate_fn
+from .collate import pretrain_collate_fn
 
 
 class Trainer(BaseTrainer):
